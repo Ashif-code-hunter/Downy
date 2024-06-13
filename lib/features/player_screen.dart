@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:better_player_plus/better_player_plus.dart';
+import 'package:downy/core/const/string_manager.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../core/utils/local_location.dart';
@@ -28,49 +30,27 @@ class _MemoryPlayerPageState extends State<MemoryPlayerPage> {
     super.initState();
   }
 
-  // void _setupDataSource() async {
-  //   var filePath = await LocalLocationUtils.getFileUrl("JILC7sCpilo.aes");
-  //   File file = File(filePath);
-  //
-  //   List<int> bytes = file.readAsBytesSync().buffer.asUint8List();
-  //   BetterPlayerDataSource dataSource =
-  //   BetterPlayerDataSource.memory(bytes, videoExtension: "mp4");
-  //   _betterPlayerController.setupDataSource(dataSource);
-  // }
-
-
-  Future<Uint8List> decryptVideoData(String inputFilePath) async {
-    // Generate encryption key and initialization vector (IV)
-    final key = eny.Key.fromUtf8('my 32 length key................');
-    final iv = eny.IV.allZerosOfLength(16);
-    final encrypter = eny.Encrypter(eny.AES(key));
-    // Open the encrypted file
-    final inputFile = File(inputFilePath);
-    final videoFileContents =  inputFile.readAsBytesSync();
-    final encryptedFile = eny.Encrypted(videoFileContents);
-    final decrypted = encrypter.decryptBytes(encryptedFile, iv: iv);
-    return Uint8List.fromList(decrypted);
-  }
-
   void _setupDataSource() async {
-    var filePath = await LocalLocationUtils.getFileUrl("JILC7sCpilo.aes");
 
-    // Decrypt the video data
-    Uint8List decryptedBytes = await decryptVideoData(filePath);
-
-    // Set up BetterPlayer data source with decrypted bytes
-    BetterPlayerDataSource dataSource = BetterPlayerDataSource(
-      BetterPlayerDataSourceType.memory,
-      "",
-      bytes: decryptedBytes,
-      videoExtension: "mp4",
-    );
-
-    // Assuming _betterPlayerController is already initialized
+    Uint8List decryptedVideo = await decryptFile(fileName: "rhrD7as3KJg.mp4",);
+    // List<int> bytes = file.readAsBytesSync().buffer.asUint8List();
+    BetterPlayerDataSource dataSource =
+    BetterPlayerDataSource.memory(decryptedVideo, videoExtension: "mp4");
     _betterPlayerController.setupDataSource(dataSource);
   }
 
-
+  Future<Uint8List> decryptFile({required String fileName}) async {
+    var inFilePath = await LocalLocationUtils.getFileUrl("${fileName.split(".").first}.aes");
+    File inFile =  File(inFilePath);
+    final videoFileContents =  inFile.readAsBytesSync();
+    final key = eny.Key.fromUtf8(AppStrings.key);
+    final iv = eny.IV.allZerosOfLength(16);
+    final encrypter = eny.Encrypter(eny.AES(key));
+    final encryptedFile = eny.Encrypted(videoFileContents);
+    final decrypted = encrypter.decrypt(encryptedFile, iv: iv);
+    final decryptedBytes = latin1.encode(decrypted);
+    return decryptedBytes;
+  }
 
 
   @override

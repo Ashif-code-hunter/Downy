@@ -14,6 +14,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../../../../core/const/color_manger.dart';
 import '../../../../core/const/font_manager.dart';
+import '../../../../core/const/string_manager.dart';
 import '../../../../core/const/style_manager.dart';
 import '../../../../core/const/values_manger.dart';
 import '../../../../core/utils/local_location.dart';
@@ -37,27 +38,17 @@ class HomeScreen extends HookWidget {
       }
     }
 
-    Future<void> encryptAndWriteVideo(
+    Future<void> downloadVideo(
         {required Stream<List<int>> stream,required StreamInfo streamInfo,required IOSink output}) async {
-      // Generate encryption key and initialization vector
-      final key = eny.Key.fromUtf8('my 32 length key................');
-      final iv = eny.IV.allZerosOfLength(16);
-      final encrypter = eny.Encrypter(eny.AES(key));
-
       var count = 0;
       final len = streamInfo.size.totalBytes;
-
+      print("eeeeee $len");
       await for (final data in stream) {
         // Keep track of the current downloaded data.
         count += data.length;
-
         // Calculate the current progress.
         final progress = ((count / len) * 100).ceil();
-
         print(progress.toStringAsFixed(2));
-
-        // Encrypt the data
-        final encrypted = encrypter.encryptBytes(data, iv: iv);
         // Write the encrypted data to file
         output.add(data);
       }
@@ -82,24 +73,6 @@ class HomeScreen extends HookWidget {
       await outFile.writeAsBytes(encrypted.bytes);
     }
 
-    decryptFile({required String fileName}) async {
-     var inFilePath = await LocalLocationUtils.getFileUrl("${fileName.split(".").first}.aes");
-     var outFilePath = await LocalLocationUtils.getFileUrl(fileName);
-         File inFile =  File(inFilePath);
-      File outFile =  File(outFilePath);
-      bool outFileExists = await outFile.exists();
-      if(!outFileExists){
-        await outFile.create();
-      }
-      final videoFileContents =  inFile.readAsBytesSync();
-      final key = eny.Key.fromUtf8('my 32 length key................');
-      final iv = eny.IV.allZerosOfLength(16);
-      final encrypter = eny.Encrypter(eny.AES(key));
-      final encryptedFile = eny.Encrypted(videoFileContents);
-      final decrypted = encrypter.decrypt(encryptedFile, iv: iv);
-      final decryptedBytes = latin1.encode(decrypted);
-      await outFile.writeAsBytes(decryptedBytes);
-    }
 
     return Scaffold(
       appBar:  PreferredSize(
@@ -170,7 +143,7 @@ class HomeScreen extends HookWidget {
                 final output = file.openWrite(mode: FileMode.writeOnlyAppend);
                 print("$title $author $duration");
                 var stream = yt.videos.streamsClient.get(streamInfo);
-                await encryptAndWriteVideo(stream: stream, streamInfo: streamInfo, output: output);
+                await downloadVideo(stream: stream, streamInfo: streamInfo, output: output);
                 await output.close();
                 await encryptFile(fileName: fileName);
                 file.deleteSync();
@@ -182,9 +155,7 @@ class HomeScreen extends HookWidget {
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () async {
-           print("objectqqq222");
-           await decryptFile(fileName: "rhrD7as3KJg.mp4");
-           print("objectqqq");
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MemoryPlayerPage()));
             },
           backgroundColor: ColorManager.secondary,
           child: Icon(Icons.file_download_outlined, color: ColorManager.white,)), //Navigate to downloaded videos list screen
