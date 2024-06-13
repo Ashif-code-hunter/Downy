@@ -43,6 +43,7 @@ dependencies:
   get_it: ^7.6.6
   flutter_screenutil: ^5.9.3
   flutter_hooks: ^0.20.5
+  youtube_explode_dart: ^2.2.1
 
 dev_dependencies:
   flutter_test:

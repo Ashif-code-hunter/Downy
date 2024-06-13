@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
             visualDensity: VisualDensity.adaptivePlatformDensity
         ),
