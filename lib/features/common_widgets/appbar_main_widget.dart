@@ -48,7 +48,7 @@ class MainAppBarWidget extends StatelessWidget {
                  children: [
                  !isFirstPage ?  InkWell(
                      onTap: () => Navigator.pop(context),
-                     child: const Icon(Icons.arrow_back_rounded),
+                     child:  Icon(Icons.arrow_back_rounded,color: ColorManager.white,),
                    ):kSizedBox,
                    kSizedW10,
                    Text(

@@ -1,28 +1,26 @@
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:downy/core/const/sized_boxes.dart';
-import 'package:encrypt/encrypt.dart' as eny;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-
+import 'package:isar/isar.dart';
+import '../../../../core/const/asset_manager.dart';
 import '../../../../core/const/color_manger.dart';
 import '../../../../core/const/font_manager.dart';
-import '../../../../core/const/string_manager.dart';
+import '../../../../core/const/go_routing_routes.dart';
 import '../../../../core/const/style_manager.dart';
 import '../../../../core/const/values_manger.dart';
-import '../../../../core/utils/local_location.dart';
 import '../../../common_widgets/appbar_main_widget.dart';
 import '../../../common_widgets/rounded_button_widget.dart';
-import '../../../player_screen.dart';
-import '../bloc/video_meta_data_bloc.dart';
+import '../widgets/animated_dialog_box.dart';
+import 'player_screen.dart';
+import '../../domain/entity/video_data_local_entity.dart';
+import '../bloc/video_data_local/video_data_bloc.dart';
+import '../bloc/video_data_local/video_data_event.dart';
+import '../bloc/video_data_local/video_data_state.dart';
+import '../bloc/video_download/video_meta_data_bloc.dart';
+
 
 class HomeScreen extends HookWidget {
   const HomeScreen({super.key});
@@ -31,7 +29,8 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
 
-    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=rhrD7as3KJg");
+    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=GC80Dk7eg_A");
+    int id = Isar.autoIncrement;
     void _pasteFromClipboard() async {
       ClipboardData? clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       if (clipboardData != null) {
@@ -109,16 +108,15 @@ class HomeScreen extends HookWidget {
                         Text("${( state.progress*100).ceil().toString()}/100%"),
                      kSizedBox14,
                         Center(
-                          child: CustomButton(onTap: (){
+                          child: RoundButtonWidget(onTap: (){
                             context.read<VideoMetaDataBloc>()
                                 .add(CancelDownloadEvent());
-
                           }, title: "Cancel",height: 30.h,isCancel: true,),
                         )
                       ],
                     );
                   }
-                  return CustomButton(onTap: () async {
+                  return RoundButtonWidget(onTap: () async {
                     context
                         .read<VideoMetaDataBloc>()
                         .add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim()));
@@ -127,20 +125,47 @@ class HomeScreen extends HookWidget {
 
                 listener: (BuildContext context, VideoState state) {
                   if(state is VideoMetaDataLoadedState ){
-                    print("${state.metaData.videoUrl} ${state.metaData.title}");
-                    context.read<VideoMetaDataBloc>()
-                      .add(DownloadVideoDataEvent(fileName: state.metaData.fileName,streamInfo: state.metaData.muxedStreamInfo));
+                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id: state.metaData.fileName,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Downloading🔃",fileName: state.metaData.fileName)));
+                    context.read<VideoMetaDataBloc>().add(DownloadVideoDataEvent(fileName: state.metaData.fileName,streamInfo: state.metaData.muxedStreamInfo!));
+                  }else if(state is VideoDownloadSuccessState){
+                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id:state.metaData.fileName ,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Completed✅",fileName: state.metaData.fileName)));
+                    showCustomDialog(
+                      context: context,
+                      isDismissible: true,
+                      header: ImageAssets.success,
+                      title: "Success",
+                      desc: 'Your video is saved in download list',
+                      onOkTap: (){
+                        Navigator.pop(context);
+                        goRoute.goNamed(AppRoute.listingScreen.name);
+                      },
+                      okColor: ColorManager.secondary,
+                    );
+                  }else if(state is VideoDownloadFailureState){
+                    showCustomDialog(
+                      context: context,
+                      isDismissible: true,
+                      header: ImageAssets.failure,
+                      title: "Failed",
+                      desc: 'Please try again late, ${state.errorMessage}',
+                      onOkTap: (){
+                        Navigator.pop(context);
+                        goRoute.goNamed(AppRoute.listingScreen.name);
+                      },
+                      okColor: ColorManager.secondary,
+                    );
                   }
                 },
-              ) // Download and encrypt videos through this button
+              ) ,
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MemoryPlayerPage()));
-            },
+            goRoute.goNamed(AppRoute.listingScreen.name);
+
+          },
           backgroundColor: ColorManager.secondary,
           child: Icon(Icons.file_download_outlined, color: ColorManager.white,)), //Navigate to downloaded videos list screen
     );

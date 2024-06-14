@@ -8,8 +8,8 @@ import '../../core/const/style_manager.dart';
 
 
 
-class CustomButton extends StatelessWidget {
-  const CustomButton({super.key,
+class RoundButtonWidget extends StatelessWidget {
+  const RoundButtonWidget({super.key,
     required this.onTap,
     this.height =60,
     this.width =200,
