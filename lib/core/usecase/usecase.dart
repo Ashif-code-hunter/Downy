@@ -9,3 +9,8 @@ abstract class UseCaseWithoutParams<Type>{
   const UseCaseWithoutParams();
   ResultFuture<Type> call();
 }
+
+abstract class UseCaseWithParamsStream<Type,Params>{
+  const UseCaseWithParamsStream();
+  Stream<Type> call(Params params);
+}
