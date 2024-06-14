@@ -8,6 +8,7 @@ import 'package:equatable/equatable.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:encrypt/encrypt.dart' as eny;
 import '../../../../core/const/string_manager.dart';
+import '../../../../core/usecase/cancel.dart';
 import '../../../../core/utils/local_location.dart';
 import '../../domain/usecase/video_download_usecases.dart';
 import '../../domain/usecase/video_meta_data_usecases.dart';
@@ -23,12 +24,22 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
   })
       :_videoMetaDataUseCase = videoMetaDataUseCase,
         _videoDownloadUseCase = videoDownloadUseCase,
+        _cancellationToken = CancellationToken(),
         super(VideoMetaInitial()) {
     on<DownloadVideoMetaDataEvent>(_onMetaDownloadVideo);
     on<DownloadVideoDataEvent>(_onDownloadVideo);
+    on<CancelDownloadEvent>(_onCancelDownload);
   }
   final VideoMetaDataUseCase _videoMetaDataUseCase;
   final VideoDownloadUseCase _videoDownloadUseCase;
+  final CancellationToken _cancellationToken;
+  double percentCheck =0.00;
+  Future<void> _onCancelDownload(
+      CancelDownloadEvent event,
+      Emitter<VideoState> emit,
+      ) async {
+    _cancellationToken.cancel(); // Request cancellation
+  }
 
   Future<void> _onMetaDownloadVideo(
       DownloadVideoMetaDataEvent event,
@@ -36,34 +47,43 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
       ) async {
     emit(VideoDownloadInProgressState());
     print("dddddd");
-
     final result = await _videoMetaDataUseCase(
       MetaDataParams(url:event.videoUrl,)
     );
     result.fold((failure) => emit(VideoDownloadFailureState(failure.errorMessage)),
             (data) => emit(VideoMetaDataLoadedState(metaData: data)));
   }
+
+
   Future<void> _onDownloadVideo(
       DownloadVideoDataEvent event,
       Emitter<VideoState> emit,
       ) async {
     emit(VideoDownloadInProgressState());
     try {
+      percentCheck =0.00;
+      _cancellationToken.reset();
       final progressStream = _videoDownloadUseCase(
-          VideoDownloadParams(fileName: event.fileName,streamInfo: event.streamInfo)
+          VideoDownloadParams(fileName: event.fileName,streamInfo: event.streamInfo,cancellationToken: _cancellationToken ),
       );
       await for (final progress in progressStream) {
-        emit(VideoDownloadProgressState(progress: progress));
+        percentCheck =progress;
+
+          emit(VideoDownloadProgressState(progress: progress));
       }
-      emit(VideoDownloadInProgressState());
-    final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
-    final status = await HeavyTask().useIsolate(filePath: filePath);
-    if(status =="Ok"){
-      print("lll");
-      emit(VideoDownloadSuccessState());
-    }else{
-      emit(VideoDownloadFailureState(status[0] ?? ""));
-    }
+      if (percentCheck >= 1.00){
+        emit(VideoDownloadInProgressState());
+        final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
+        final status = await HeavyTask().useIsolate(filePath: filePath);
+        if(status[0] =="Ok"){
+          emit(VideoDownloadSuccessState());
+        }else{
+          emit(VideoDownloadFailureState(status[0] ?? ""));
+        }
+      }else{
+        emit(VideoDownloadFailureState("Download is canceled"));
+
+      }
     } catch (e) {
       emit(VideoDownloadFailureState(e.toString()));
     }

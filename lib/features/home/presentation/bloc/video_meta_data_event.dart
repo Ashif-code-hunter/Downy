@@ -25,3 +25,5 @@ class DownloadVideoDataEvent extends VideoMetaDataEvent {
   @override
   List<Object> get props => [fileName,streamInfo];
 }
+
+class CancelDownloadEvent extends VideoMetaDataEvent {}

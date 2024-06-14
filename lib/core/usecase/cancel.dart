@@ -6,4 +6,7 @@ class CancellationToken {
   void cancel() {
     _isCancelled = true;
   }
+  void reset() {
+    _isCancelled = false;
+  }
 }

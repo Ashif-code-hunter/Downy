@@ -106,7 +106,15 @@ class HomeScreen extends HookWidget {
                           backgroundColor: ColorManager.grey3,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        Text("${( state.progress*100).ceil().toString()}/100%")
+                        Text("${( state.progress*100).ceil().toString()}/100%"),
+                     kSizedBox14,
+                        Center(
+                          child: CustomButton(onTap: (){
+                            context.read<VideoMetaDataBloc>()
+                                .add(CancelDownloadEvent());
+
+                          }, title: "Cancel",height: 30.h,isCancel: true,),
+                        )
                       ],
                     );
                   }
