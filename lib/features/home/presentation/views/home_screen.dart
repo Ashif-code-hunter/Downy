@@ -6,6 +6,7 @@ import 'package:downy/core/const/sized_boxes.dart';
 import 'package:encrypt/encrypt.dart' as eny;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +22,7 @@ import '../../../../core/utils/local_location.dart';
 import '../../../common_widgets/appbar_main_widget.dart';
 import '../../../common_widgets/rounded_button_widget.dart';
 import '../../../player_screen.dart';
+import '../bloc/video_meta_data_bloc.dart';
 
 class HomeScreen extends HookWidget {
   const HomeScreen({super.key});
@@ -29,7 +31,7 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
 
-    final _linkController = useTextEditingController();
+    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=rhrD7as3KJg");
     void _pasteFromClipboard() async {
       ClipboardData? clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       if (clipboardData != null) {
@@ -38,40 +40,6 @@ class HomeScreen extends HookWidget {
       }
     }
 
-    Future<void> downloadVideo(
-        {required Stream<List<int>> stream,required StreamInfo streamInfo,required IOSink output}) async {
-      var count = 0;
-      final len = streamInfo.size.totalBytes;
-      print("eeeeee $len");
-      await for (final data in stream) {
-        // Keep track of the current downloaded data.
-        count += data.length;
-        // Calculate the current progress.
-        final progress = ((count / len) * 100).ceil();
-        print(progress.toStringAsFixed(2));
-        // Write the encrypted data to file
-        output.add(data);
-      }
-    }
-
-    encryptFile({required String fileName}) async {
-      var inFilePath = await LocalLocationUtils.getFileUrl(fileName);
-      var outFilePath = await LocalLocationUtils.getFileUrl("${fileName.split(".").first}.aes");
-      File inFile =  File(inFilePath);
-      File outFile =  File(outFilePath);
-
-      bool outFileExists = await outFile.exists();
-
-      if(!outFileExists){
-        await outFile.create();
-      }
-      final videoFileContents =  inFile.readAsStringSync(encoding: latin1);
-      final key = eny.Key.fromUtf8('my 32 length key................');
-      final iv = eny.IV.allZerosOfLength(16);
-      final encrypter = eny.Encrypter(eny.AES(key));
-      final encrypted = encrypter.encrypt(videoFileContents, iv: iv);
-      await outFile.writeAsBytes(encrypted.bytes);
-    }
 
 
     return Scaffold(
@@ -121,34 +89,42 @@ class HomeScreen extends HookWidget {
 
               ),
               kSizedBox30,
-              CustomButton(onTap: () async {
-                print("ki");
-                final yt = YoutubeExplode();
-                final id = VideoId('https://www.youtube.com/watch?v=rhrD7as3KJg'.trim());
-                print("ff $id");
-                var video = await yt.videos.get(id); // Returns a Video instance.
-                var title = video.title;
-                var author = video.author;
-                var duration = video.duration;
-                var streamManifest = await yt.videos.streamsClient.getManifest(id);
-                var streamInfo = streamManifest.muxed.bestQuality;
-                final fileName = '${video.id}.${streamInfo.container.name}';
-                Directory directory = await getApplicationDocumentsDirectory();
-                print("object444 ${directory.path}/$fileName");
-                final file = File('${directory.path}/$fileName');
-                if (file.existsSync()) {
-                  print("ooiei8 ${directory.path}/$fileName");
-                  file.deleteSync();
-                }
-                final output = file.openWrite(mode: FileMode.writeOnlyAppend);
-                print("$title $author $duration");
-                var stream = yt.videos.streamsClient.get(streamInfo);
-                await downloadVideo(stream: stream, streamInfo: streamInfo, output: output);
-                await output.close();
-                await encryptFile(fileName: fileName);
-                file.deleteSync();
-                yt.close();
-              },title: "Download",height: 30.h,) // Download and encrypt videos through this button
+              BlocConsumer<VideoMetaDataBloc,VideoState>(
+                builder: (context, state) {
+                  if (state is VideoDownloadInProgressState) {
+                    return const CircularProgressIndicator();
+                  } else if (state is VideoDownloadProgressState) {
+                    print(state.progress);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+
+                        LinearProgressIndicator(
+                            value: state.progress,
+                        color: ColorManager.secondary,
+                          minHeight: 5,
+                          backgroundColor: ColorManager.grey3,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        Text("${( state.progress*100).ceil().toString()}/100%")
+                      ],
+                    );
+                  }
+                  return CustomButton(onTap: () async {
+                    context
+                        .read<VideoMetaDataBloc>()
+                        .add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim()));
+                  },title: "Download",height: 30.h,);
+                },
+
+                listener: (BuildContext context, VideoState state) {
+                  if(state is VideoMetaDataLoadedState ){
+                    print("${state.metaData.videoUrl} ${state.metaData.title}");
+                    context.read<VideoMetaDataBloc>()
+                      .add(DownloadVideoDataEvent(fileName: state.metaData.fileName,streamInfo: state.metaData.muxedStreamInfo));
+                  }
+                },
+              ) // Download and encrypt videos through this button
             ],
           ),
         ),
