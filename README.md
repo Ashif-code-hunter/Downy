@@ -28,22 +28,8 @@ The project follows the Clean Architecture principles, ensuring a clear separati
 
 ### Directory Structure
 
-lib
-├── core
-│ ├── const
-│ ├── errors
-│ ├── extension
-│ ├── providers
-│ ├── services
-│ ├── usecase
-│ └── utils
-├── features
-│ ├── common_widgets
-│ ├── home
-│ │ ├── data
-│ │ ├── domain
-│ │ └── presentation
-└── main.dart
+
+![image](https://github.com/Ashif-code-hunter/Downy/assets/71429125/ed1a5b63-1ed6-41a1-a6eb-5c0fb2c0fb88)
 
 
 ## Packages Used
