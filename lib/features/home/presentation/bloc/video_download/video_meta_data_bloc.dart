@@ -34,11 +34,12 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
   final VideoDownloadUseCase _videoDownloadUseCase;
   final CancellationToken _cancellationToken;
   double percentCheck =0.00;
+
   Future<void> _onCancelDownload(
       CancelDownloadEvent event,
       Emitter<VideoState> emit,
       ) async {
-    _cancellationToken.cancel(); // Request cancellation
+    _cancellationToken.cancel(); // Request cancellation function for downloading video
   }
 
 
@@ -52,7 +53,7 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
     );
     result.fold((failure) => emit(VideoDownloadFailureState(errorMessage:failure.errorMessage,metaData:state.metaData)),
             (data) => emit(VideoMetaDataLoadedState(metaData: data)));
-  }
+  }// The meta data for downloading video is obtained from this function
 
 
   Future<void> _onDownloadVideo(
@@ -65,16 +66,16 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
       _cancellationToken.reset();
       final progressStream = _videoDownloadUseCase(
           VideoDownloadParams(fileName: event.fileName,streamInfo: event.streamInfo,cancellationToken: _cancellationToken ),
-      );
+      ); //triggers  the stream for downloading video
       await for (final progress in progressStream) {
-        percentCheck =progress;
+        percentCheck =progress; // data for showing linear percentage
 
           emit(VideoDownloadProgressState(progress: progress,metaData:state.metaData));
       }
-      if (percentCheck >= 1.00){
+      if (percentCheck >= 1.00){ // if download is successfully done we will start encrypting
         emit(VideoDownloadInProgressState(metaData:state.metaData));
         final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
-        final status = await HeavyTaskEncryption().useIsolate(filePath: filePath);
+        final status = await HeavyTaskEncryption().useIsolate(filePath: filePath); // we use the help of isolates because encrypting and decrypting videos are expensive tasks
         if(status[0] =="Ok"){
           emit(VideoDownloadSuccessState(metaData:state.metaData));
         }else{
@@ -132,8 +133,6 @@ class HeavyTaskEncryption {
       final encrypted = encrypter.encrypt(videoFileContents, iv: iv);
       await outFile.writeAsBytes(encrypted.bytes);
       inFile.deleteSync();
-      print("dddddddddd");
-
       return "Ok";
     }catch(e){
       print(e);

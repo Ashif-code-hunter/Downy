@@ -105,12 +105,12 @@ class HomeScreen extends HookWidget {
                           backgroundColor: ColorManager.grey3,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        Text("${( state.progress*100).ceil().toString()}/100%"),
+                        Text("${( state.progress*100).ceil().toString()}/100%"), // progress with percentage
                      kSizedBox14,
                         Center(
                           child: RoundButtonWidget(onTap: (){
                             context.read<VideoMetaDataBloc>()
-                                .add(CancelDownloadEvent());
+                                .add(CancelDownloadEvent()); // triggering cancelling of video download
                           }, title: "Cancel",height: 30.h,isCancel: true,),
                         )
                       ],
@@ -119,16 +119,18 @@ class HomeScreen extends HookWidget {
                   return RoundButtonWidget(onTap: () async {
                     context
                         .read<VideoMetaDataBloc>()
-                        .add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim()));
+                        .add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim())); // triggering meta data downloading bloc
                   },title: "Download",height: 30.h,);
                 },
 
                 listener: (BuildContext context, VideoState state) {
                   if(state is VideoMetaDataLoadedState ){
-                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id: state.metaData.fileName,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Downloading🔃",fileName: state.metaData.fileName)));
-                    context.read<VideoMetaDataBloc>().add(DownloadVideoDataEvent(fileName: state.metaData.fileName,streamInfo: state.metaData.muxedStreamInfo!));
+                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id: state.metaData.fileName,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Downloading🔃",fileName: state.metaData.fileName))); // initial data saving locally with downloading status
+                    context.read<VideoMetaDataBloc>().add(DownloadVideoDataEvent(fileName: state.metaData.fileName,streamInfo: state.metaData.muxedStreamInfo!)); // triggering video data downloading and encrypting video using encrypt and isolate bloc
                   }else if(state is VideoDownloadSuccessState){
-                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id:state.metaData.fileName ,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Completed✅",fileName: state.metaData.fileName)));
+                    context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id:state.metaData.fileName ,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Completed✅",fileName: state.metaData.fileName)));// final data saving locally with downloading status
+                    context.read<VideoDataLocalBloc>().add(GetAllVideoDataEvent());// final data saving locally with downloading status
+
                     showCustomDialog(
                       context: context,
                       isDismissible: true,
@@ -139,6 +141,7 @@ class HomeScreen extends HookWidget {
                         Navigator.pop(context);
                         goRoute.goNamed(AppRoute.listingScreen.name);
                       },
+
                       okColor: ColorManager.secondary,
                     );
                   }else if(state is VideoDownloadFailureState){
@@ -147,10 +150,9 @@ class HomeScreen extends HookWidget {
                       isDismissible: true,
                       header: ImageAssets.failure,
                       title: "Failed",
-                      desc: 'Please try again late, ${state.errorMessage}',
+                      desc: 'Please try again later, ${state.errorMessage}',
                       onOkTap: (){
                         Navigator.pop(context);
-                        goRoute.goNamed(AppRoute.listingScreen.name);
                       },
                       okColor: ColorManager.secondary,
                     );
@@ -163,8 +165,7 @@ class HomeScreen extends HookWidget {
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            goRoute.goNamed(AppRoute.listingScreen.name);
-
+            goRoute.goNamed(AppRoute.listingScreen.name); // go to downloaded list page, navigation implemented with gorouter
           },
           backgroundColor: ColorManager.secondary,
           child: Icon(Icons.file_download_outlined, color: ColorManager.white,)), //Navigate to downloaded videos list screen

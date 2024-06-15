@@ -53,7 +53,7 @@ class ListingScreen extends HookWidget {
                   return  InkWell(
                     onTap: (){
                       context.read<SelectedVideoBloc>().add(VideoEvent(fileName: data.fileName));
-                      goRoute.goNamed(AppRoute.viewScreen.name);
+                      goRoute.goNamed(AppRoute.viewScreen.name); // triggering to pull locally saved encrypted video for decrypting
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -70,6 +70,8 @@ class ListingScreen extends HookWidget {
                           Text(data.title,style: getBoldStyle(color: ColorManager.secondary,fontSize: FontSize.s14),maxLines: 3,overflow: TextOverflow.ellipsis,),
                           kSizedBox4,
                           Text(data.description,style: getBoldStyle(color: ColorManager.black,fontSize: FontSize.s10),maxLines: 5,overflow: TextOverflow.ellipsis,),
+                          kSizedBox4,
+                          Text(data.duration.split(".").first,style: getBoldStyle(color: ColorManager.black,fontSize: FontSize.s10),maxLines: 5,overflow: TextOverflow.ellipsis,),
                           kSizedBox4,
                           Align(
                               alignment: Alignment.bottomRight,

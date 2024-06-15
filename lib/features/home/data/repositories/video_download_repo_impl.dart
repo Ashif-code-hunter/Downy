@@ -39,12 +39,12 @@ class VideoDownloadRepositoryImpl implements VideoDownloadRepository {
       if (cancel.isCancellationRequested) {
         // Handle cancellation logic here
         print("Download is cancelled");
-        output.close();
+        output.close(); // cancellation of download
         break;
       }
-      count += data.length;
+      count += data.length;// keep track of the total number of bytes downloaded so far.
       final progress = (count / len) ;
-      yield progress;
+      yield progress; //calculating the progress by checking streams length and downloaded bytes
       output.add(data);
     }
     await output.close();

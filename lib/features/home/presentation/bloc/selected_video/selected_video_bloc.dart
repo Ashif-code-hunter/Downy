@@ -18,14 +18,11 @@ class SelectedVideoBloc extends Bloc<SelectedVideoEvent, SelectedVideoState> {
   SelectedVideoBloc() : super(SelectedVideoInitial()) {
     on<VideoEvent>((event, emit) async {
       emit(SelectedVideoLoading());
-      final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
-      final result = await HeavyTaskDecryption().useIsolate(filePath: filePath);
+      final filePath =  await LocalLocationUtils.getFileUrl( event.fileName); // we are finding our file path here.
+      final result = await HeavyTaskDecryption().useIsolate(filePath: filePath); // we use the help of isolates because encrypting and decrypting videos are expensive tasks
       if(result[0] is! String){
-        print("xxxxxxxxxxxxxs111 $result");
-
-        emit(SelectedVideoLoaded(videoDataList: result[0]));
+        emit(SelectedVideoLoaded(videoDataList: result[0])); //if it is Uint8List the data is returned for better player
       }else{
-        print("xxxxxxxxxxxxx ${result.runtimeType}");
         emit(SelectedVideoError(errorMessage: "Could not decrypt the file, please try again later"));
       }
     });

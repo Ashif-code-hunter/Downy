@@ -11,7 +11,7 @@ class VideoDataDao {
     final directory = await getApplicationDocumentsDirectory();
     isar = await Isar.open([VideoDataModelSchema], directory: directory.path);
 
-  }
+  } // initializing function for isra in main.dart
 
   Future<int> insertVideoData(VideoDataModel videoData) async {
     try{

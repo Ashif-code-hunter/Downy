@@ -34,43 +34,40 @@ void showCustomDialog({
 
     builder: (BuildContext context) {
       return
-        PopScope(
-          canPop: false,
-          child:  AlertDialog(
-            titlePadding: EdgeInsets.zero,
-            contentPadding: EdgeInsets.zero,
-            backgroundColor: Colors.transparent,
-            content: VerticalStackDialog(
-              width: null,
-              header: header != null ? Lottie.asset(
-                header,
-                fit: BoxFit.contain,
-                repeat: true,
-                height: 400.h,
-              ): null,
-              padding: const EdgeInsets.all(AppPadding.p16),
-              title: title,
-              titleStyle: getBoldStyle(color:ColorManager.black,fontSize: FontSize.s16,),
-              desc: desc,
-              descStyle: getSemiBoldStyle(color: ColorManager.black,fontSize: FontSize.s14 ),
-              btnOk:
-              CustomButton(
-                text:okButtonText?? "Ok",
-                onTap:  onOkTap??()=>Navigator.pop(context),
-                width: 70.w,
-                height:20.h ,
-                color: okColor ?? ColorManager.green,
-              ),
-              btnCancel:showCancelButton ?? false ? CustomButton(
-                text:cancelButtonText?? "Cancel",
-                onTap:  onCancelTap??()=>Navigator.pop(context),
-                width: 70.w,
-                height:20.h ,
-                color: cancelColor ?? ColorManager.red,
-              ):null,
+        AlertDialog(
+          titlePadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          content: VerticalStackDialog(
+            width: null,
+            header: header != null ? Lottie.asset(
+              header,
+              fit: BoxFit.contain,
+              repeat: true,
+              height: 400.h,
+            ): null,
+            padding: const EdgeInsets.all(AppPadding.p16),
+            title: title,
+            titleStyle: getBoldStyle(color:ColorManager.black,fontSize: FontSize.s16,),
+            desc: desc,
+            descStyle: getSemiBoldStyle(color: ColorManager.black,fontSize: FontSize.s14 ),
+            btnOk:
+            CustomButton(
+              text:okButtonText?? "Ok",
+              onTap:  onOkTap??()=>Navigator.pop(context),
+              width: 70.w,
+              height:20.h ,
+              color: okColor ?? ColorManager.green,
             ),
-
+            btnCancel:showCancelButton ?? false ? CustomButton(
+              text:cancelButtonText?? "Cancel",
+              onTap:  onCancelTap??()=>Navigator.pop(context),
+              width: 70.w,
+              height:20.h ,
+              color: cancelColor ?? ColorManager.red,
+            ):null,
           ),
+
         );
     },
   );

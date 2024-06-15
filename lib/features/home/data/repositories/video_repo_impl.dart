@@ -20,9 +20,9 @@ class VideoMetaDataRepositoryImpl implements VideoMetaDataRepository {
   ResultFuture<VideoMetaEntity>  getVideoMetadata({required String videoUrl}) async {
     try{
       final videoData = await _youTubeDataSource.getVideoMetadata(videoUrl: videoUrl);
-      return Right(videoData);
+      return Right(videoData); // successful data is shared in right
     }on APIException catch (e) {
-      return Left(APIFailure.fromException(e));
+      return Left(APIFailure.fromException(e));// failure data is shared in left
     }
   }
 }

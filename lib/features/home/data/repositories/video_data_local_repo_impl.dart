@@ -31,7 +31,7 @@ class VideoDataRepository implements VideoDataRepositoryAbstract {
    return Right(result);
  }on APIException catch (e) {
    return Left(APIFailure.fromException(e));
- }
+ } // saving to isra to local database
 
   }
 
@@ -51,7 +51,7 @@ class VideoDataRepository implements VideoDataRepositoryAbstract {
       return Left(APIFailure.fromException(e));
     }
 
-  }
+  } // fetching from isra local database
 
   @override
   ResultFuture<bool> deleteVideoData({required int id}) async {
@@ -61,6 +61,6 @@ class VideoDataRepository implements VideoDataRepositoryAbstract {
     }on APIException catch (e) {
       return Left(APIFailure.fromException(e));
     }
-
+  // deleting from isra
   }
 }

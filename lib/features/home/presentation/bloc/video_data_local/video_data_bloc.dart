@@ -29,9 +29,7 @@ class VideoDataLocalBloc extends Bloc<VideoDataLocalEvent, VideoDataLocalState> 
       SaveVideoDataEvent event,
       Emitter<VideoDataLocalState> emit,
       ) async {
-    print("ssssss");
     emit(VideoDataLoading());
-    print("ssssss");
     try {
       final result = await _saveVideoDataUseCase(SaveVideoParams(videoDataEntity: event.videoDataEntity));
       result.fold((failure) {
@@ -46,7 +44,7 @@ class VideoDataLocalBloc extends Bloc<VideoDataLocalEvent, VideoDataLocalState> 
       print(e);
       emit(VideoDataError(errorMessage: e.toString()));
     }
-  }
+  } // save and update data in isra
 
   void _onGetAllVideoData(
       GetAllVideoDataEvent event,
@@ -60,7 +58,7 @@ class VideoDataLocalBloc extends Bloc<VideoDataLocalEvent, VideoDataLocalState> 
     } catch (e) {
       emit(VideoDataError(errorMessage: e.toString()));
     }
-  }
+  } // get all data from isra
 
   void _onDeleteVideoData(
       DeleteVideoDataEvent event,
@@ -74,5 +72,5 @@ class VideoDataLocalBloc extends Bloc<VideoDataLocalEvent, VideoDataLocalState> 
     } catch (e) {
       emit(VideoDataError(errorMessage: e.toString()));
     }
-  }
+  } //delete data in isra
 }
