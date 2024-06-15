@@ -24,7 +24,6 @@ class VideoDownloadUseCase extends UseCaseWithParamsStream<double,VideoDownloadP
       );
       await for (final progress in fileStream) {
         if (params.cancellationToken.isCancellationRequested) {
-          // Handle cancellation logic here
           break;
         }
         yield progress;

@@ -7,11 +7,11 @@ import 'package:downy/features/home/domain/entity/video_entity.dart';
 import 'package:equatable/equatable.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:encrypt/encrypt.dart' as eny;
-import '../../../../core/const/string_manager.dart';
-import '../../../../core/usecase/cancel.dart';
-import '../../../../core/utils/local_location.dart';
-import '../../domain/usecase/video_download_usecases.dart';
-import '../../domain/usecase/video_meta_data_usecases.dart';
+import '../../../../../core/const/string_manager.dart';
+import '../../../../../core/usecase/cancel.dart';
+import '../../../../../core/utils/local_location.dart';
+import '../../../domain/usecase/video_download_usecases.dart';
+import '../../../domain/usecase/video_meta_data_usecases.dart';
 
 part 'video_meta_data_event.dart';
 part 'video_meta_data_state.dart';
@@ -25,7 +25,7 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
       :_videoMetaDataUseCase = videoMetaDataUseCase,
         _videoDownloadUseCase = videoDownloadUseCase,
         _cancellationToken = CancellationToken(),
-        super(VideoMetaInitial()) {
+        super(const VideoMetaInitial(metaData:VideoMetaEntity(description: "",fileName: "",downloadStatus: "",duration: Duration(seconds: 0),title: "",id: "",videoUrl: "",streamManifest: null,muxedStreamInfo: null))) {
     on<DownloadVideoMetaDataEvent>(_onMetaDownloadVideo);
     on<DownloadVideoDataEvent>(_onDownloadVideo);
     on<CancelDownloadEvent>(_onCancelDownload);
@@ -34,64 +34,65 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
   final VideoDownloadUseCase _videoDownloadUseCase;
   final CancellationToken _cancellationToken;
   double percentCheck =0.00;
+
   Future<void> _onCancelDownload(
       CancelDownloadEvent event,
       Emitter<VideoState> emit,
       ) async {
-    _cancellationToken.cancel(); // Request cancellation
+    _cancellationToken.cancel(); // Request cancellation function for downloading video
   }
+
 
   Future<void> _onMetaDownloadVideo(
       DownloadVideoMetaDataEvent event,
       Emitter<VideoState> emit,
       ) async {
-    emit(VideoDownloadInProgressState());
-    print("dddddd");
+    emit(VideoDownloadInProgressState(metaData:state.metaData));
     final result = await _videoMetaDataUseCase(
       MetaDataParams(url:event.videoUrl,)
     );
-    result.fold((failure) => emit(VideoDownloadFailureState(failure.errorMessage)),
+    result.fold((failure) => emit(VideoDownloadFailureState(errorMessage:failure.errorMessage,metaData:state.metaData)),
             (data) => emit(VideoMetaDataLoadedState(metaData: data)));
-  }
+  }// The meta data for downloading video is obtained from this function
 
 
   Future<void> _onDownloadVideo(
       DownloadVideoDataEvent event,
       Emitter<VideoState> emit,
       ) async {
-    emit(VideoDownloadInProgressState());
+    emit(VideoDownloadInProgressState(metaData:state.metaData));
     try {
       percentCheck =0.00;
       _cancellationToken.reset();
       final progressStream = _videoDownloadUseCase(
           VideoDownloadParams(fileName: event.fileName,streamInfo: event.streamInfo,cancellationToken: _cancellationToken ),
-      );
+      ); //triggers  the stream for downloading video
       await for (final progress in progressStream) {
-        percentCheck =progress;
+        percentCheck =progress; // data for showing linear percentage
 
-          emit(VideoDownloadProgressState(progress: progress));
+          emit(VideoDownloadProgressState(progress: progress,metaData:state.metaData));
       }
-      if (percentCheck >= 1.00){
-        emit(VideoDownloadInProgressState());
+      if (percentCheck >= 1.00){ // if download is successfully done we will start encrypting
+        emit(VideoDownloadInProgressState(metaData:state.metaData));
         final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
-        final status = await HeavyTask().useIsolate(filePath: filePath);
+        final status = await HeavyTaskEncryption().useIsolate(filePath: filePath); // we use the help of isolates because encrypting and decrypting videos are expensive tasks
         if(status[0] =="Ok"){
-          emit(VideoDownloadSuccessState());
+          emit(VideoDownloadSuccessState(metaData:state.metaData));
         }else{
-          emit(VideoDownloadFailureState(status[0] ?? ""));
+          emit(VideoDownloadFailureState(errorMessage:status[0] ?? "",metaData:state.metaData));
         }
       }else{
-        emit(VideoDownloadFailureState("Download is canceled"));
+        emit(VideoDownloadFailureState(errorMessage: "Download is canceled",metaData:state.metaData));
 
       }
     } catch (e) {
-      emit(VideoDownloadFailureState(e.toString()));
+      emit(VideoDownloadFailureState(errorMessage:e.toString(),metaData:state.metaData));
     }
   }
 }
 
 
-class HeavyTask {
+class HeavyTaskEncryption {
   Future<List> useIsolate({
     required String filePath,
 }) async
@@ -132,8 +133,6 @@ class HeavyTask {
       final encrypted = encrypter.encrypt(videoFileContents, iv: iv);
       await outFile.writeAsBytes(encrypted.bytes);
       inFile.deleteSync();
-      print("dddddddddd");
-
       return "Ok";
     }catch(e){
       print(e);

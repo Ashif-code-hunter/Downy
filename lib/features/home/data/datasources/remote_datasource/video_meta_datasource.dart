@@ -26,10 +26,11 @@ class YouTubeDataSourceImpl implements YouTubeMetaDataDataSource {
        id: video.id.toString(),
        title: video.title,
        duration: video.duration ?? const Duration(seconds: 0),
-       videoUrl: videoUrl, downloadStatus: 'Downloading',
+       videoUrl: videoUrl, downloadStatus: 'Downloading🔃',
       fileName: '${video.id}${streamInfo.videoResolution}.${streamInfo.container.name}',
       muxedStreamInfo: streamInfo,
-      streamManifest: streamManifest
+      streamManifest: streamManifest,
+      description: video.description,
      );
    }catch(e){
      throw APIException(
