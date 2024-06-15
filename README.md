@@ -36,13 +36,13 @@ The project follows the Clean Architecture principles, ensuring a clear separati
 - [youtube_explode_dart](https://pub.dev/packages/youtube_explode_dart): For downloading videos.
 - [encrypt](https://pub.dev/packages/encrypt): For encrypting and decrypting videos.
 - [isar](https://pub.dev/packages/isar): For local storage of video metadata.
-- [better_player](https://pub.dev/packages/better_player): For video playback.
+- [better_player](https://pub.dev/packages/better_player_plus): For video playback.
 - [flutter_bloc](https://pub.dev/packages/flutter_bloc): For state management with BLoC.
 
 ## Setup and Installation
 1. **Clone the Repository**
    ```bash
-   git clone [https://github.com/Ashif-code-hunter/Downy.git](https://github.com/Ashif-code-hunter/Downy)
+   git clone https://github.com/Ashif-code-hunter/Downy.git
    cd Downy
 2. **Install Dependencies**
    ```bash
