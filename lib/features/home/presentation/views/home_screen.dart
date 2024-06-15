@@ -11,9 +11,9 @@ import '../../../../core/const/font_manager.dart';
 import '../../../../core/const/go_routing_routes.dart';
 import '../../../../core/const/style_manager.dart';
 import '../../../../core/const/values_manger.dart';
+import '../../../common_widgets/animated_dialog_box.dart';
 import '../../../common_widgets/appbar_main_widget.dart';
 import '../../../common_widgets/rounded_button_widget.dart';
-import '../widgets/animated_dialog_box.dart';
 import 'player_screen.dart';
 import '../../domain/entity/video_data_local_entity.dart';
 import '../bloc/video_data_local/video_data_bloc.dart';
@@ -29,7 +29,7 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
 
-    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=GC80Dk7eg_A");
+    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=tTtjETjGDFY");
     int id = Isar.autoIncrement;
     void _pasteFromClipboard() async {
       ClipboardData? clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
