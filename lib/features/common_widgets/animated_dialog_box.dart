@@ -9,7 +9,6 @@ import '../../../../core/const/color_manger.dart';
 import '../../../../core/const/font_manager.dart';
 import '../../../../core/const/style_manager.dart';
 import '../../../../core/const/values_manger.dart';
-import '../../../common_widgets/rounded_button_widget.dart';
 import 'custom_animated_popup_widget.dart';
 import 'custom_button_widget.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/const/sized_boxes.dart';
+import '../../core/const/sized_boxes.dart';
 
 
 class VerticalStackDialog extends StatelessWidget {
