@@ -69,12 +69,11 @@ class VideoMetaDataBloc extends Bloc<VideoMetaDataEvent, VideoState> {
       ); //triggers  the stream for downloading video
       await for (final progress in progressStream) {
         percentCheck =progress; // data for showing linear percentage
-
           emit(VideoDownloadProgressState(progress: progress,metaData:state.metaData));
       }
       if (percentCheck >= 1.00){ // if download is successfully done we will start encrypting
         emit(VideoDownloadInProgressState(metaData:state.metaData));
-        final filePath =  await LocalLocationUtils.getFileUrl( event.fileName);
+        final filePath =  await LocalLocationUtils.getFileUrl(event.fileName);
         final status = await HeavyTaskEncryption().useIsolate(filePath: filePath); // we use the help of isolates because encrypting and decrypting videos are expensive tasks
         if(status[0] =="Ok"){
           emit(VideoDownloadSuccessState(metaData:state.metaData));

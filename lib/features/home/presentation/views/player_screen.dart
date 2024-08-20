@@ -27,7 +27,6 @@ class ViewScreenPlayer extends HookWidget {
           aspectRatio: 16 / 9,
           fit: BoxFit.contain,
         );
-
         return BetterPlayerController(betterPlayerConfiguration);
       },
       [key],

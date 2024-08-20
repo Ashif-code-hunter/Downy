@@ -15,7 +15,6 @@ class VideoDataDao {
 
   Future<int> insertVideoData(VideoDataModel videoData) async {
     try{
-
       return await isar.writeTxn(() => isar.videoDataModels.put(videoData));
     }catch(e){
       throw APIException(message: 'Unexpected error: ${e.toString()}', statusCode: 404);
@@ -25,7 +24,6 @@ class VideoDataDao {
   Future<List<VideoDataModel>> getAllVideoData() async {
     try{
       return await isar.videoDataModels.where().findAll();
-
     }catch(e){
     throw APIException(
     message: 'Unexpected error: ${e.toString()}', statusCode: 404);
@@ -36,10 +34,9 @@ class VideoDataDao {
   Future<bool> deleteVideoData(int id) async {
     try{
       return await isar.writeTxn(() =>isar.videoDataModels.delete(id)) ;
-
     }catch(e){
         throw APIException(
-          message: 'Unexpected error: ${e.toString()}', statusCode: 404);
+            message: 'Unexpected error: ${e.toString()}', statusCode: 404);
     }
   }
 

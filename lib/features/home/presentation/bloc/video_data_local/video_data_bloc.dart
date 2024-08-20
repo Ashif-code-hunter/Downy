@@ -34,7 +34,6 @@ class VideoDataLocalBloc extends Bloc<VideoDataLocalEvent, VideoDataLocalState> 
       final result = await _saveVideoDataUseCase(SaveVideoParams(videoDataEntity: event.videoDataEntity));
       result.fold((failure) {
         print(failure);
-
            emit(VideoDataError(errorMessage: failure.toString()));},
               (data) {
         print(data);

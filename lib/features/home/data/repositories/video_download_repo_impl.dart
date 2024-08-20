@@ -24,11 +24,9 @@ class VideoDownloadRepositoryImpl implements VideoDownloadRepository {
   Stream<double> downloadVideoWithProgress({required String fileName,required StreamInfo streamInfo,required CancellationToken cancel,}) async* {
     Directory directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/$fileName');
-
     if (file.existsSync()) {
       file.deleteSync();
     }
-
     final output = file.openWrite(mode: FileMode.writeOnlyAppend);
     print("ddd4");
 

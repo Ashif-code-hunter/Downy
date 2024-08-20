@@ -50,7 +50,6 @@ class VideoDataRepository implements VideoDataRepositoryAbstract {
     }on APIException catch (e) {
       return Left(APIFailure.fromException(e));
     }
-
   } // fetching from isra local database
 
   @override

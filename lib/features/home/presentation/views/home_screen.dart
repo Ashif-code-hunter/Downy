@@ -29,7 +29,7 @@ class HomeScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
 
-    final _linkController = useTextEditingController(text: "https://www.youtube.com/watch?v=tTtjETjGDFY");
+    final _linkController = useTextEditingController();
     int id = Isar.autoIncrement;
     void _pasteFromClipboard() async {
       ClipboardData? clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
@@ -38,9 +38,6 @@ class HomeScreen extends HookWidget {
         _linkController.text = pastedText;
       }
     }
-
-
-
     return Scaffold(
       appBar:  PreferredSize(
         preferredSize:  Size(double.infinity, 60.h),
@@ -97,15 +94,14 @@ class HomeScreen extends HookWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-
                         LinearProgressIndicator(
                             value: state.progress,
-                        color: ColorManager.secondary,
+                           color: ColorManager.secondary,
                           minHeight: 5,
                           backgroundColor: ColorManager.grey3,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        Text("${( state.progress*100).ceil().toString()}/100%"), // progress with percentage
+                        Text("${(state.progress*100).ceil().toString()}/100%"), // progress with percentage
                      kSizedBox14,
                         Center(
                           child: RoundButtonWidget(onTap: (){
@@ -117,12 +113,9 @@ class HomeScreen extends HookWidget {
                     );
                   }
                   return RoundButtonWidget(onTap: () async {
-                    context
-                        .read<VideoMetaDataBloc>()
-                        .add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim())); // triggering meta data downloading bloc
+                    context.read<VideoMetaDataBloc>().add(DownloadVideoMetaDataEvent(videoUrl: _linkController.text.trim())); // triggering meta data downloading bloc
                   },title: "Download",height: 30.h,);
                 },
-
                 listener: (BuildContext context, VideoState state) {
                   if(state is VideoMetaDataLoadedState ){
                     context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id: state.metaData.fileName,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Downloading🔃",fileName: state.metaData.fileName))); // initial data saving locally with downloading status
@@ -130,7 +123,6 @@ class HomeScreen extends HookWidget {
                   }else if(state is VideoDownloadSuccessState){
                     context.read<VideoDataLocalBloc>().add(SaveVideoDataEvent(VideoDataEntity(id:state.metaData.fileName ,title: state.metaData.title,description:state.metaData.description,duration: state.metaData.duration.toString(),downloadStatus:"Completed✅",fileName: state.metaData.fileName)));// final data saving locally with downloading status
                     context.read<VideoDataLocalBloc>().add(GetAllVideoDataEvent());// final data saving locally with downloading status
-
                     showCustomDialog(
                       context: context,
                       isDismissible: true,
@@ -141,7 +133,6 @@ class HomeScreen extends HookWidget {
                         Navigator.pop(context);
                         goRoute.goNamed(AppRoute.listingScreen.name);
                       },
-
                       okColor: ColorManager.secondary,
                     );
                   }else if(state is VideoDownloadFailureState){
